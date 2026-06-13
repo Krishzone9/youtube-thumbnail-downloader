@@ -7,48 +7,47 @@ export async function onRequestGet(context) {
         return new Response(JSON.stringify({ error: 'Invalid YouTube URL' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
-    const fetchWithRetry = async (urlToFetch, retries = 3) => {
-        for (let i = 0; i < retries; i++) {
-            try {
-                const response = await fetch(urlToFetch, {
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                        'Accept-Language': 'en-US,en;q=0.9',
-                        'Cookie': 'CONSENT=YES+cb.20210328-17-p0.en+FX+478'
-                    }
-                });
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                return await response.text();
-            } catch (e) {
-                if (i === retries - 1) throw e;
-            }
-        }
-    };
+    const videoIdMatch = targetUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([^&?/\s]+)/);
+    const videoId = videoIdMatch ? videoIdMatch[1] : null;
+
+    if (!videoId) {
+        return new Response(JSON.stringify({ error: 'Video ID not found' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+    }
 
     try {
-        const html = await fetchWithRetry(targetUrl);
+        const response = await fetch('https://www.youtube.com/youtubei/v1/player', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                context: {
+                    client: {
+                        clientName: 'WEB',
+                        clientVersion: '2.20210721.00.00'
+                    }
+                },
+                videoId: videoId
+            })
+        });
+
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const data = await response.json();
         
         let title = '';
         let description = '';
 
-        const playerResponseMatch = html.match(/var ytInitialPlayerResponse = (\{.*?\});/);
-        
-        if (playerResponseMatch) {
-            try {
-                const playerResponse = JSON.parse(playerResponseMatch[1]);
-                title = playerResponse.videoDetails.title || '';
-                description = playerResponse.videoDetails.shortDescription || '';
-            } catch (e) {}
-        } else {
-            const titleMatch = html.match(/<meta name="title" content="([^"]+)">/);
-            if (titleMatch) title = titleMatch[1];
-            
-            const descMatch = html.match(/<meta name="description" content="([^"]+)">/);
-            if (descMatch) description = descMatch[1];
+        if (data && data.videoDetails) {
+            title = data.videoDetails.title || '';
+            description = data.videoDetails.shortDescription || '';
         }
 
         return new Response(JSON.stringify({ title, description }), {
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            }
         });
 
     } catch (error) {
