@@ -13,9 +13,10 @@ export async function onRequestGet(context) {
             return new Response('Error downloading image', { status: imageRes.status });
         }
 
-        const newHeaders = new Headers(imageRes.headers);
+        const newHeaders = new Headers();
         newHeaders.set('Content-Disposition', `attachment; filename="${filename}"`);
         newHeaders.set('Content-Type', 'image/jpeg');
+        newHeaders.set('Cache-Control', 'public, max-age=86400');
 
         return new Response(imageRes.body, {
             status: imageRes.status,

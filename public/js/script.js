@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { profileUrl, bannerUrl, channelName, channelDescription } = await getChannelImagesFast(url);
                 
                 if (profileUrl) {
-                    channelLogoImg.src = `/api/proxy-image?url=${encodeURIComponent(profileUrl)}`;
+                    channelLogoImg.src = profileUrl;
                     downloadLogoBtn.href = `/api/download?url=${encodeURIComponent(profileUrl)}&filename=${encodeURIComponent('channel_logo.jpg')}`;
                     downloadLogoBtn.style.display = 'inline-flex';
                 } else {
@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 if (bannerUrl) {
-                    channelBannerImg.src = `/api/proxy-image?url=${encodeURIComponent(bannerUrl)}`;
+                    channelBannerImg.src = bannerUrl;
                     downloadBannerBtn.href = `/api/download?url=${encodeURIComponent(bannerUrl)}&filename=${encodeURIComponent('channel_banner.jpg')}`;
                     downloadBannerBtn.style.display = 'inline-flex';
                     channelBannerImg.parentElement.style.display = 'flex';
@@ -198,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const applyFallback = () => {
                     const fallbackUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-                    thumbnailImg.src = `/api/proxy-image?url=${encodeURIComponent(fallbackUrl)}`;
+                    thumbnailImg.src = fallbackUrl;
                     qualityBadge.textContent = 'HQ (480x360)';
                     downloadBtn.href = `/api/download?url=${encodeURIComponent(fallbackUrl)}&filename=${encodeURIComponent(filename)}`;
                 };
@@ -211,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 thumbnailImg.onerror = applyFallback;
 
-                thumbnailImg.src = `/api/proxy-image?url=${encodeURIComponent(finalUrl)}`;
+                thumbnailImg.src = finalUrl;
                 downloadBtn.href = `/api/download?url=${encodeURIComponent(finalUrl)}&filename=${encodeURIComponent(filename)}`;
                 
                 loadingIndicator.style.display = 'none';
