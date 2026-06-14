@@ -50,11 +50,31 @@ export async function onRequestGet(context) {
         try {
             const pageResponse = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
                 headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Cookie': 'CONSENT=YES+cb.20210328-17-p0.en+FX+478'
                 }
             });
             if (pageResponse.ok) {
                 const html = await pageResponse.text();
+                
+                // Try extracting from ytInitialPlayerResponse first as it contains the full description
+                const playerResponseMatch = html.match(/var ytInitialPlayerResponse = (\{.*?\});/);
+                if (playerResponseMatch) {
+                    try {
+                        const data = JSON.parse(playerResponseMatch[1]);
+                        if (!title && data.videoDetails?.title) {
+                            title = data.videoDetails.title;
+                        }
+                        if (!description && data.videoDetails?.shortDescription) {
+                            description = data.videoDetails.shortDescription;
+                        }
+                    } catch (e) {
+                        console.error('Error parsing player response from HTML:', e.message);
+                    }
+                }
+
+                // If still missing, try meta tags
                 if (!title) {
                     const titleMatch = html.match(/<meta property="og:title" content="([^"]*)">/) || html.match(/<meta name="title" content="([^"]*)">/);
                     if (titleMatch) title = titleMatch[1];
