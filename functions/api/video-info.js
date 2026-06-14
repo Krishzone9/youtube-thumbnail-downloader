@@ -69,6 +69,25 @@ export async function onRequestGet(context) {
         }
     }
 
+    // Final Fallback for title: oEmbed API (Does not block server IPs)
+    if (!title) {
+        try {
+            const oembedResponse = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
+            if (oembedResponse.ok) {
+                const oembedData = await oembedResponse.json();
+                if (oembedData && oembedData.title) {
+                    title = oembedData.title;
+                }
+            }
+        } catch (oembedError) {
+            console.error('oEmbed error:', oembedError.message);
+        }
+    }
+
+    if (!title && !description) {
+        return new Response(JSON.stringify({ error: 'Failed to extract video info' }), { status: 500, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } });
+    }
+
     // Unescape HTML entities that might appear in meta tags
     const unescapeHtml = (str) => {
         if (!str) return '';
