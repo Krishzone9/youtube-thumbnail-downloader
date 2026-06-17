@@ -674,3 +674,53 @@ footer {
 .seo-content p {
   margin-bottom: 20px;
 }
+
+/* Desktop Nav */
+.desktop-nav {
+  display: none;
+  gap: 20px;
+  align-items: center;
+}
+
+.desktop-nav a {
+  color: var(--yt-text);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.desktop-nav a:hover {
+  color: var(--yt-text-secondary);
+}
+
+@media (min-width: 1024px) {
+  .desktop-nav {
+    display: flex;
+  }
+  .menu-container {
+    display: none;
+  }
+}
+
+/* Clear Button */
+.clear-btn {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--yt-text-secondary);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 5px;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clear-btn:hover {
+  color: var(--yt-text);
+}

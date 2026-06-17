@@ -146,7 +146,7 @@ export async function onRequestGet(context) {
 
     // Return whatever we have (even if description is empty, title alone is useful)
     if (!title && !description) {
-        return new Response(JSON.stringify({ error: 'Failed to extract video info' }), { status: 500, headers: corsHeaders });
+        return new Response(JSON.stringify({ error: 'Video not found or is private' }), { status: 404, headers: corsHeaders });
     }
 
     return new Response(JSON.stringify({

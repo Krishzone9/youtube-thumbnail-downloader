@@ -14,8 +14,12 @@
     <meta property="og:image" content="https://solidsmm.in/og-image.jpg">
     <meta property="og:site_name" content="Youtube Thumbnail Downloader">
     
+    <link rel="canonical" href="https://solidsmm.in/" />
+    <link rel="alternate" hreflang="en" href="https://solidsmm.in/" />
+    
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
     
     <script type="application/ld+json">
     {
@@ -148,6 +152,12 @@
             <i class="fa-brands fa-youtube"></i>
             <span>Youtube Thumbnail Downloader</span>
         </a>
+        <div class="desktop-nav">
+            <a href="index.html">Home</a>
+            <a href="contact.html">Contact Me</a>
+            <a href="terms.html">Terms & Conditions</a>
+            <a href="privacy.html">Privacy Policy</a>
+        </div>
         <div class="menu-container">
             <button class="menu-toggle" id="menuToggle" title="Menu"><i class="fa-solid fa-bars"></i></button>
             <div class="dropdown-menu" id="dropdownMenu">
@@ -168,6 +178,7 @@
         <div class="input-group">
             <div class="input-wrapper">
                 <input type="text" id="urlInput" placeholder="Paste Video, Shorts, or Channel Link Here...">
+                <button id="clearBtn" class="clear-btn" title="Clear" style="display: none;"><i class="fa-solid fa-xmark"></i></button>
                 <button id="pasteBtn" class="paste-btn" title="Paste"><i class="fa-regular fa-clipboard"></i></button>
             </div>
             <button id="getBtn"><i class="fa-solid fa-download"></i> Get</button>

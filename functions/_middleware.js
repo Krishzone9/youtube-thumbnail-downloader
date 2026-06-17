@@ -16,5 +16,10 @@ export async function onRequest(context) {
     newResponse.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
     newResponse.headers.set('X-XSS-Protection', '1; mode=block');
 
+    // --- Cache Headers for Static Assets ---
+    if (url.pathname.startsWith('/css/') || url.pathname.startsWith('/js/') || url.pathname.match(/\.(svg|png|jpg|jpeg|gif|ico)$/i)) {
+        newResponse.headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+
     return newResponse;
 }

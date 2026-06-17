@@ -31,6 +31,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const errorMessage = document.getElementById('errorMessage');
     const loadingIndicator = document.getElementById('loadingIndicator');
     const pasteBtn = document.getElementById('pasteBtn');
+    const clearBtn = document.getElementById('clearBtn');
+
+    // Add a simple toast function
+    function showToast(message) {
+        let toast = document.getElementById('toastNotification');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'toastNotification';
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 30px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #333;
+                color: #fff;
+                padding: 12px 24px;
+                border-radius: 30px;
+                font-size: 14px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 1000;
+                opacity: 0;
+                transition: opacity 0.3s;
+                pointer-events: none;
+            `;
+            document.body.appendChild(toast);
+        }
+        toast.textContent = message;
+        toast.style.opacity = '1';
+        setTimeout(() => toast.style.opacity = '0', 3000);
+    }
 
     // Menu toggle logic
     const menuToggle = document.getElementById('menuToggle');
@@ -71,11 +101,34 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!urlInput || !getBtn) return; 
 
 
+    if (urlInput) {
+        urlInput.addEventListener('input', () => {
+            if (urlInput.value.trim().length > 0) {
+                if (pasteBtn) pasteBtn.style.display = 'none';
+                if (clearBtn) clearBtn.style.display = 'flex';
+            } else {
+                if (pasteBtn) pasteBtn.style.display = 'flex';
+                if (clearBtn) clearBtn.style.display = 'none';
+            }
+        });
+    }
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            urlInput.value = '';
+            if (pasteBtn) pasteBtn.style.display = 'flex';
+            clearBtn.style.display = 'none';
+            urlInput.focus();
+        });
+    }
+
     if (pasteBtn) {
         pasteBtn.addEventListener('click', async () => {
             try {
                 const text = await navigator.clipboard.readText();
                 urlInput.value = text;
+                pasteBtn.style.display = 'none';
+                if (clearBtn) clearBtn.style.display = 'flex';
             } catch (err) {
                 console.error('Failed to read clipboard contents: ', err);
                 alert('Please allow clipboard permissions or paste manually.');
@@ -90,6 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
             input.select();
             input.setSelectionRange(0, 99999);
             navigator.clipboard.writeText(input.value);
+            
+            showToast('Copied to clipboard!');
             
             const originalHtml = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-check" style="color: #4CAF50;"></i>';
@@ -185,11 +240,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadingIndicator.style.display = 'none';
                 resultSection.classList.add('active');
                 if (channelOutput) channelOutput.style.display = 'flex';
+                setTimeout(() => resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
 
             } else if (linkType === 'video') {
                 const videoId = extractVideoID(url);
                 if (!videoId) {
                     throw new Error('Invalid YouTube URL');
+                }
+                
+                // Fetch video info FIRST to verify video exists and get details
+                const infoRes = await fetch(`/api/video-info?url=${encodeURIComponent(url)}`);
+                const infoData = await infoRes.json();
+                
+                if (!infoRes.ok || infoData.error) {
+                    throw new Error(infoData.error || 'Video not found or is private');
                 }
                 
                 let finalUrl = `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
@@ -217,19 +281,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadingIndicator.style.display = 'none';
                 resultSection.classList.add('active');
                 if (videoOutput) videoOutput.style.display = 'flex';
+                setTimeout(() => resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
 
                 if (videoDetailsSection) {
-                    videoDetailsSection.style.display = 'none';
-                    fetch(`/api/video-info?url=${encodeURIComponent(url)}`)
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.title || data.description) {
-                                videoTitleInput.value = data.title || '';
-                                videoDescTextarea.value = data.description || '';
-                                videoDetailsSection.style.display = 'flex';
-                            }
-                        })
-                        .catch(err => console.error("Error fetching video info:", err));
+                    if (infoData.title || infoData.description) {
+                        videoTitleInput.value = infoData.title || '';
+                        videoDescTextarea.value = infoData.description || '';
+                        videoDetailsSection.style.display = 'flex';
+                    } else {
+                        videoDetailsSection.style.display = 'none';
+                    }
                 }
             } else {
                 throw new Error('Invalid YouTube URL');
