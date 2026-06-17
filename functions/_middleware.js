@@ -1,15 +1,20 @@
-// Middleware: Block search engine crawlers on the *.pages.dev domain
-// while keeping the main domain (solidsmm.in) fully indexable
+// Middleware: Security headers + block crawlers on pages.dev domain
 export async function onRequest(context) {
     const response = await context.next();
     const url = new URL(context.request.url);
+    const newResponse = new Response(response.body, response);
 
-    // Only add noindex header for the pages.dev domain
+    // --- Block crawlers on pages.dev domain only ---
     if (url.hostname.endsWith('.pages.dev')) {
-        const newResponse = new Response(response.body, response);
         newResponse.headers.set('X-Robots-Tag', 'noindex, nofollow');
-        return newResponse;
     }
 
-    return response;
+    // --- Security Headers (all domains) ---
+    newResponse.headers.set('X-Content-Type-Options', 'nosniff');
+    newResponse.headers.set('X-Frame-Options', 'DENY');
+    newResponse.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    newResponse.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    newResponse.headers.set('X-XSS-Protection', '1; mode=block');
+
+    return newResponse;
 }

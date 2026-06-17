@@ -3,9 +3,13 @@ export async function onRequestGet(context) {
     const url = new URL(request.url);
     const targetUrl = url.searchParams.get('url');
 
+    const origin = request.headers.get('Origin') || '';
+    const allowedOrigins = ['https://solidsmm.in', 'https://www.solidsmm.in', 'http://localhost:8788', 'http://127.0.0.1:8788'];
+    const corsOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
+
     const corsHeaders = {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
+        'Access-Control-Allow-Origin': corsOrigin
     };
 
     if (!targetUrl || (!targetUrl.includes('youtube.com/') && !targetUrl.includes('youtu.be/'))) {

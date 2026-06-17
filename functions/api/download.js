@@ -6,6 +6,20 @@ export async function onRequestGet(context) {
 
     if (!targetUrl) return new Response('URL is required', { status: 400 });
 
+    // SECURITY: Only allow YouTube image domains (prevents SSRF attacks)
+    try {
+        const parsedUrl = new URL(targetUrl);
+        const allowedHosts = ['i.ytimg.com', 'yt3.ggpht.com', 'yt3.googleusercontent.com', 'lh3.googleusercontent.com'];
+        if (!allowedHosts.some(host => parsedUrl.hostname === host || parsedUrl.hostname.endsWith('.' + host))) {
+            return new Response('Forbidden: only YouTube image URLs are allowed', { status: 403 });
+        }
+    } catch (e) {
+        return new Response('Invalid URL', { status: 400 });
+    }
+
+    // SECURITY: Sanitize filename to prevent header injection
+    const safeFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '_').substring(0, 100);
+
     try {
         const imageRes = await fetch(targetUrl);
         
@@ -14,7 +28,7 @@ export async function onRequestGet(context) {
         }
 
         const newHeaders = new Headers();
-        newHeaders.set('Content-Disposition', `attachment; filename="${filename}"`);
+        newHeaders.set('Content-Disposition', `attachment; filename="${safeFilename}"`);
         newHeaders.set('Content-Type', 'image/jpeg');
         newHeaders.set('Cache-Control', 'public, max-age=86400');
 
