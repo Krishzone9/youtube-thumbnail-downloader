@@ -129,6 +129,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 urlInput.value = text;
                 pasteBtn.style.display = 'none';
                 if (clearBtn) clearBtn.style.display = 'flex';
+                
+                if (text.trim() !== '') {
+                    handleAction();
+                }
             } catch (err) {
                 console.error('Failed to read clipboard contents: ', err);
                 alert('Please allow clipboard permissions or paste manually.');
